@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
 	"go.opentelemetry.io/otel"
 	otlpgrpc "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	otlphttp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -156,10 +157,13 @@ func initTracer() (context.Context, func()) {
 	// https://github.com/open-telemetry/opentelemetry-go/blob/main/sdk/trace/simple_span_processor.go
 	ssp := sdktrace.NewSimpleSpanProcessor(exporter)
 
+	idg := xray.NewIDGenerator()
+
 	// ParentBased/AlwaysSample Sampler is the default and that's fine for this
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithResource(res),
 		sdktrace.WithSpanProcessor(ssp),
+		sdktrace.WithIDGenerator(idg),
 	)
 
 	// inject the tracer into the otel globals (and this starts the background stuff, I think)
